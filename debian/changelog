@@ -18,6 +18,8 @@ python-wrapt (1.9.0-1) unstable; urgency=medium
   * Fixed debian/copyright ordering.
   * Standards-Version: 3.9.8 (no change).
   * Added export DEB_BUILD_MAINT_OPTIONS = hardening=+bindnow.
+  * Removed do-not-use-the-rdt-sphinx-theme.patch and build-depends on the
+    python-sphinx-rtd-theme package.
 
  -- Thomas Goirand <zigo@debian.org>  Fri, 09 Sep 2016 08:05:11 +0000
 
