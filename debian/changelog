@@ -1,3 +1,10 @@
+python-wrapt (1.9.0-2) unstable; urgency=medium
+
+  * Repair the mistake of build-depends-indep: the binaries are *not*
+    arch: all.
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 09 Sep 2016 13:22:18 +0000
+
 python-wrapt (1.9.0-1) unstable; urgency=medium
 
   [ Ondřej Nový ]
