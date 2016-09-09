@@ -8,6 +8,7 @@ python-wrapt (1.9.0-2) unstable; urgency=medium
   * Removed non-active maintainers.
   * Reviewed (build-)depends and ran wrap-and-sort -t -a.
   * Simplified debian/rules using goodies from openstack-pkg-tools >= 52~.
+  * Using python$$pyvers -m pytest to run tests (Closes: #835247).
 
  -- Thomas Goirand <zigo@debian.org>  Fri, 09 Sep 2016 08:05:11 +0000
 
