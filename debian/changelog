@@ -6,6 +6,7 @@ python-wrapt (1.9.0-2) unstable; urgency=medium
 
   [ Thomas Goirand ]
   * Removed non-active maintainers.
+  * Reviewed (build-)depends and ran wrap-and-sort -t -a.
 
  -- Thomas Goirand <zigo@debian.org>  Fri, 09 Sep 2016 08:05:11 +0000
 
