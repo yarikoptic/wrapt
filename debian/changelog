@@ -1,12 +1,14 @@
-python-wrapt (1.9.0-2) unstable; urgency=medium
+python-wrapt (1.9.0-3) UNRELEASED; urgency=medium
 
-  [ Thomas Goirand ]
-  * Repair the mistake of build-depends-indep: the binaries are *not*
-    arch: all.
-
-  [ Daniel Baumann ]
   * Updating vcs fields.
   * Updating copyright format url.
+
+ -- Daniel Baumann <daniel.baumann@progress-linux.org>  Fri, 04 Aug 2017 21:59:18 +0200
+
+python-wrapt (1.9.0-2) unstable; urgency=medium
+
+  * Repair the mistake of build-depends-indep: the binaries are *not*
+    arch: all.
 
  -- Thomas Goirand <zigo@debian.org>  Fri, 09 Sep 2016 13:22:18 +0000
 
