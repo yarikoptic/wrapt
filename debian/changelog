@@ -5,6 +5,8 @@ python-wrapt (1.9.0-3) UNRELEASED; urgency=medium
   * Updating maintainer field.
   * Running wrap-and-sort -bast.
   * Updating standards version to 4.0.0.
+  * Removing gbp.conf, not used anymore or should be specified in the
+    developers dotfiles.
 
  -- Daniel Baumann <daniel.baumann@progress-linux.org>  Fri, 04 Aug 2017 21:59:18 +0200
 
