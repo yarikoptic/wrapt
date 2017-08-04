@@ -6,6 +6,7 @@ python-wrapt (1.9.0-2) unstable; urgency=medium
 
   [ Daniel Baumann ]
   * Updating vcs fields.
+  * Updating copyright format url.
 
  -- Thomas Goirand <zigo@debian.org>  Fri, 09 Sep 2016 13:22:18 +0000
 
