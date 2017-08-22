@@ -8,6 +8,7 @@ python-wrapt (1.9.0-3) UNRELEASED; urgency=medium
   * Removing gbp.conf, not used anymore or should be specified in the
     developers dotfiles.
   * Updating standards version to 4.0.1.
+  * Updating standards version to 4.1.0.
 
  -- Daniel Baumann <daniel.baumann@progress-linux.org>  Fri, 04 Aug 2017 21:59:18 +0200
 
