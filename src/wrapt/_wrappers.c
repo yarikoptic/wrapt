@@ -134,7 +134,9 @@ static int WraptObjectProxy_traverse(WraptObjectProxyObject *self,
         visitproc visit, void *arg)
 {
     Py_VISIT(self->dict);
+#if 0
     Py_VISIT(self->wrapped);
+#endif
 
     return 0;
 }
@@ -144,7 +146,9 @@ static int WraptObjectProxy_traverse(WraptObjectProxyObject *self,
 static int WraptObjectProxy_clear(WraptObjectProxyObject *self)
 {
     Py_CLEAR(self->dict);
+#if 0
     Py_CLEAR(self->wrapped);
+#endif
 
     return 0;
 }
