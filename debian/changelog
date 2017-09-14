@@ -1,5 +1,6 @@
 python-wrapt (1.9.0-3) UNRELEASED; urgency=medium
 
+  [ Daniel Baumann ]
   * Updating vcs fields.
   * Updating copyright format url.
   * Updating maintainer field.
@@ -10,7 +11,10 @@ python-wrapt (1.9.0-3) UNRELEASED; urgency=medium
   * Updating standards version to 4.0.1.
   * Updating standards version to 4.1.0.
 
- -- Daniel Baumann <daniel.baumann@progress-linux.org>  Fri, 04 Aug 2017 21:59:18 +0200
+  [ Yaroslav Halchenko ]
+  * debian/watch - use http://pypi.debian.net/ to monitor for new versions
+
+ -- Yaroslav Halchenko <debian@onerussian.com>  Thu, 14 Sep 2017 10:46:17 -0400
 
 python-wrapt (1.9.0-2) unstable; urgency=medium
 
