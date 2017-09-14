@@ -1,6 +1,241 @@
 Release Notes
 =============
 
+Version 1.10.11
+---------------
+
+**Bugs Fixed**
+
+* When wrapping a ``@classmethod`` in a class used as a base class, when
+  the method was called via the derived class type, the base class type was
+  being passed for the ``cls`` argument instead of the derived class type
+  through which the call was made.
+
+**New Features**
+
+* The C extension can be disabled at runtime by setting the environment
+  variable ``WRAPT_DISABLE_EXTENSIONS``. This may be necessary where there
+  is currently a difference in behaviour between pure Python implementation
+  and C extension and the C extension isn't having the desired result.
+
+Version 1.10.10
+---------------
+
+**Features Changed**
+
+* Added back missing description and categorisations when releasing to PyPi.
+
+Version 1.10.9
+--------------
+
+**Bugs Fixed**
+
+* Code for ``inspect.getargspec()`` when using Python 2.6 was missing
+  import of ``sys`` module.
+
+Version 1.10.8
+--------------
+
+**Bugs Fixed**
+
+* Ensure that ``inspect.getargspec()`` is only used with Python 2.6 where
+  required, as function has been removed in Python 3.6.
+
+Version 1.10.7
+--------------
+
+**Bugs Fixed**
+
+* The mod operator '%' was being incorrectly proxied in Python variant of
+  object proxy to the xor operator '^'.
+
+Version 1.10.6
+--------------
+
+**Bugs Fixed**
+
+* Registration of post import hook would fail with an exception if
+  registered after another import hook for the same target module had been
+  registered and the target module also imported.
+
+**New Features**
+
+* Support for testing with Travis CI added to repository.
+
+Version 1.10.5
+--------------
+
+**Bugs Fixed**
+
+* Post import hook discovery was not working correctly where multiple
+  target modules were registered in the same entry point list. Only the
+  callback for the last would be called regardless of the target module.
+
+* If a ``WeakFunctionProxy`` wrapper was used around a method of a class
+  which was decorated using a wrapt decorator, the decorator wasn't being
+  invoked when the method was called via the weakref proxy.
+
+**Features Changed**
+
+* The ``register_post_import_hook()`` function, modelled after the
+  function of the same name in PEP-369 has been extended to allow a string
+  name to be supplied for the import hook. This needs to be of the form
+  ``module::function`` and will result in an import hook proxy being used
+  which will only load and call the function of the specified moduled when
+  the import hook is required. This avoids needing to load the code needed
+  to operate on the target module unless required.
+
+Version 1.10.4
+--------------
+
+**Bugs Fixed**
+
+* Fixup botched package version number from 1.10.3 release.
+
+Version 1.10.3
+--------------
+
+**Bugs Fixed**
+
+* Post import hook discovery from third party modules declared via
+  ``setuptools`` entry points was failing due to typo in temporary variable
+  name. Also added the ``discover_post_import_hooks()`` to the public API
+  as was missing.
+
+**Features Changed**
+
+* To ensure parity between pure Python and C extension variants of the
+  ``ObjectProxy`` class, allow the ``__wrapped__`` attribute to be set
+  in a derived class when the ``ObjectProxy.__init__()`` method hasn't
+  been called.
+
+Version 1.10.2
+--------------
+
+**Bugs Fixed**
+
+* When creating a derived ``ObjectProxy``, if the base class ``__init__()``
+  method wasn't called and the ``__wrapped__`` attribute was accessed,
+  in the pure Python implementation a recursive call of ``__getattr__()``
+  would occur and the maximum stack depth would be reached and an exception
+  raised.
+
+* When creating a derived ``ObjectProxy``, if the base class ``__init__()``
+  method wasn't called, in the C extension implementation, if that instance
+  was then used in a binary arithmetic operation the process would crash.
+
+Version 1.10.1
+--------------
+
+**Bugs Fixed**
+
+* When using ``FunctionWrapper`` around a method of an existing instance of
+  a class, rather than on the type, then a memory leak could occur in two
+  different scenarios.
+
+  The first issue was that wrapping a method on an instance of a class was
+  causing an unwanted reference to the class meaning that if the class type
+  was transient, such as it is being created inside of a function call, the
+  type object would leak.
+
+  The second issue was that wrapping a method on an instance of a class and
+  then calling the method was causing an unwanted reference to the instance
+  meaning that if the instance was transient, it would leak.
+
+  This was only occurring when the C extension component for the
+  ``wrapt`` module was being used.
+
+Version 1.10.0
+--------------
+
+**New Features**
+
+* When specifying an adapter for a decorator, it is now possible to pass
+  in, in addition to passing in a callable, a tuple of the form which
+  is returned by ``inspect.getargspec()``, or a string of the form which
+  is returned by ``inspect.formatargspec()``. In these two cases the
+  decorator will automatically compile a stub function to use as the
+  adapter. This eliminates the need for a caller to generate the stub
+  function if generating the signature on the fly.
+
+  ::
+
+      def argspec_factory(wrapped):
+          argspec = inspect.getargspec(wrapped)
+
+          args = argspec.args[1:]
+          defaults = argspec.defaults and argspec.defaults[-len(argspec.args):]
+
+          return inspect.ArgSpec(args, argspec.varargs,
+                  argspec.keywords, defaults)
+
+      def session(wrapped):
+          @wrapt.decorator(adapter=argspec_factory(wrapped))
+          def _session(wrapped, instance, args, kwargs):
+              with transaction() as session:
+                  return wrapped(session, *args, **kwargs)
+
+          return _session(wrapped)
+
+  This mechanism and the original mechanism to pass a function, meant
+  that the adapter function had to be created in advance. If the adapter
+  needed to be generated on demand for the specific function to be
+  wrapped, then it would have been necessary to use a closure around
+  the definition of the decorator as above, such that the generator could
+  be passed in.
+
+  As a convenience, instead of using such a closure, it is also now
+  possible to write:
+
+  ::
+
+      def argspec_factory(wrapped):
+          argspec = inspect.getargspec(wrapped)
+
+          args = argspec.args[1:]
+          defaults = argspec.defaults and argspec.defaults[-len(argspec.args):]
+
+          return inspect.ArgSpec(args, argspec.varargs,
+                  argspec.keywords, defaults)
+
+      @wrapt.decorator(adapter=wrapt.adapter_factory(argspec_factory))
+      def _session(wrapped, instance, args, kwargs):
+          with transaction() as session:
+              return wrapped(session, *args, **kwargs)
+
+  The result of ``wrapt.adapter_factory()`` will be recognised as indicating
+  that the creation of the adapter is to be deferred until the decorator is
+  being applied to a function. The factory function for generating the
+  adapter function or specification on demand will be passed the function
+  being wrapped by the decorator.
+
+  If wishing to create a library of routines for generating adapter
+  functions or specifications dynamically, then you can do so by creating
+  classes which derive from ``wrapt.AdapterFactory`` as that is the type
+  which is recognised as indicating lazy evaluation of the adapter
+  function. For example, ``wrapt.adapter_factory()`` is itself implemented
+  as:
+
+  ::
+
+      class DelegatedAdapterFactory(wrapt.AdapterFactory):
+          def __init__(self, factory):
+              super(DelegatedAdapterFactory, self).__init__()
+              self.factory = factory
+          def __call__(self, wrapped):
+              return self.factory(wrapped)
+
+      adapter_factory = DelegatedAdapterFactory
+
+**Bugs Fixed**
+
+* The ``inspect.signature()`` function was only added in Python 3.3.
+  Use fallback when doesn't exist and on Python 3.2 or earlier Python 3
+  versions.
+  
+  Note that testing is only performed for Python 3.3+, so it isn't
+  actually known if the ``wrapt`` package works on Python 3.2.
+
 Version 1.9.0
 -------------
 
@@ -107,12 +342,12 @@ Version 1.6.0
   even though the wrapped object didn't have one. Similarly, callable()
   would always return True even if the wrapped object was not callable.
 
-  This resulted due to the existance of the __call__() method on the
+  This resulted due to the existence of the __call__() method on the
   wrapper, required to support the possibility that the wrapped object
   may be called via the proxy object even if it may not turn out that
   the wrapped object was callable.
 
-  Because checking for the existance of a __call__() method or using
+  Because checking for the existence of a __call__() method or using
   callable() can sometimes be used to indirectly infer the type of an
   object, this could cause issues. To ensure that this now doesn't
   occur, the ability to call a wrapped object via the proxy object has
@@ -164,7 +399,7 @@ Version 1.4.2
 * A process could crash if the C extension module was used and when using
   the ObjectProxy class a reference count cycle was created that required
   the Python garbage collector to kick in to break the cycle. This was
-  occuring as the C extension had not implemented GC support in the
+  occurring as the C extension had not implemented GC support in the
   ObjectProxy class correctly.
 
 Version 1.4.1
@@ -306,7 +541,7 @@ Version 1.1.1
 
 **Bugs Fixed**
 
-* Python object memory leak was occuring due to incorrect increment of
+* Python object memory leak was occurring due to incorrect increment of
   object reference count in C implementation of object proxy when an
   instance method was called via the class and the instance passed in
   explicitly.
@@ -346,7 +581,7 @@ Version 1.1.0
 * When deriving from ObjectProxy, and the C extension variant
   was being used, if a derived class __init__() attempted to update
   attributes, even the special '_self_' attributed before calling the base
-  class __init__() methid, then an exception would be raised indicating
+  class __init__() method, then an exception would be raised indicating
   that the 'wrapper has not been initialised'.
 
 Version 1.0.0

@@ -52,7 +52,7 @@ class TestAdapterAttributes(unittest.TestCase):
             self.assertEqual(function1d.__qualname__, __qualname__)
 
     def test_module_name(self):
-       # Test preservation of function __module__ attribute.
+        # Test preservation of function __module__ attribute.
 
         self.assertEqual(function1d.__module__, __name__)
 
@@ -101,6 +101,53 @@ class TestArgumentSpecification(unittest.TestCase):
         # Test preservation of isinstance() checks.
 
         self.assertTrue(isinstance(function1d, type(function1o)))
+
+class TestDynamicAdapter(unittest.TestCase):
+
+    def test_dynamic_adapter(self):
+        def _adapter(arg1, arg2, arg3=None, *args, **kwargs): pass
+
+        argspec = inspect.getargspec(_adapter)
+
+        @wrapt.decorator(adapter=argspec)
+        def _wrapper_1(wrapped, instance, args, kwargs):
+            return wrapped(*args, **kwargs)
+
+        @_wrapper_1
+        def _function_1():
+            pass
+
+        self.assertEqual(inspect.getargspec(_function_1), argspec)
+
+        args = inspect.formatargspec(*argspec)
+
+        @wrapt.decorator(adapter=args)
+        def _wrapper_2(wrapped, instance, args, kwargs):
+            return wrapped(*args, **kwargs)
+
+        @_wrapper_2
+        def _function_2():
+            pass
+
+        self.assertEqual(inspect.getargspec(_function_2), argspec)
+
+    def test_adapter_factory(self):
+        def factory(wrapped):
+            argspec = inspect.getargspec(wrapped)
+            argspec.args.insert(0, 'arg0')
+            return argspec
+
+        @wrapt.decorator(adapter=wrapt.adapter_factory(factory))
+        def _wrapper_1(wrapped, instance, args, kwargs):
+            return wrapped(*args, **kwargs)
+
+        @_wrapper_1
+        def _function_1(arg1, arg2):
+            pass
+
+        argspec = inspect.getargspec(_function_1)
+
+        self.assertEqual(argspec.args, ['arg0', 'arg1', 'arg2'])
 
 if __name__ == '__main__':
     unittest.main()

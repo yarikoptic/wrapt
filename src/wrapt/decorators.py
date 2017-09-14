@@ -8,13 +8,37 @@ import sys
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
+if PY3:
+    string_types = str,
+
+    import builtins
+    exec_ = getattr(builtins, "exec")
+    del builtins
+
+else:
+    string_types = basestring,
+
+    def exec_(_code_, _globs_=None, _locs_=None):
+        """Execute code in a namespace."""
+        if _globs_ is None:
+            frame = sys._getframe(1)
+            _globs_ = frame.f_globals
+            if _locs_ is None:
+                _locs_ = frame.f_locals
+            del frame
+        elif _locs_ is None:
+            _locs_ = _globs_
+        exec("""exec _code_ in _globs_, _locs_""")
+
 from functools import partial
-from inspect import getargspec, ismethod, isclass
+from inspect import ismethod, isclass, formatargspec
 from collections import namedtuple
 from threading import Lock, RLock
 
-if not PY2:
+try:
     from inspect import signature
+except ImportError:
+    pass
 
 from .wrappers import (FunctionWrapper, BoundFunctionWrapper, ObjectProxy,
     CallableObjectProxy)
@@ -72,7 +96,7 @@ class _AdapterFunctionSurrogate(CallableObjectProxy):
 
     @property
     def __signature__(self):
-        if PY2:
+        if 'signature' not in globals():
             return self._self_adapter.__signature__
         else:
             # Can't allow this to fail on Python 3 else it falls
@@ -127,6 +151,19 @@ class AdapterWrapper(FunctionWrapper):
     def __signature__(self):
         return self._self_surrogate.__signature__
 
+class AdapterFactory(object):
+    def __call__(self, wrapped):
+        raise NotImplementedError()
+
+class DelegatedAdapterFactory(AdapterFactory):
+    def __init__(self, factory):
+        super(DelegatedAdapterFactory, self).__init__()
+        self.factory = factory
+    def __call__(self, wrapped):
+        return self.factory(wrapped)
+
+adapter_factory = DelegatedAdapterFactory
+
 # Decorator for creating other decorators. This decorator and the
 # wrappers which they use are designed to properly preserve any name
 # attributes, function signatures etc, in addition to the wrappers
@@ -144,17 +181,17 @@ def decorator(wrapper=None, enabled=None, adapter=None):
     # decorator. In that case parts of the function '__code__' and
     # '__defaults__' attributes are used from the adapter function
     # rather than those of the wrapped function. This allows for the
-    # argument specification from inspect.getargspec() to be overridden
-    # with a prototype for a different function than what was wrapped.
-    # The 'enabled' argument provides a way to enable/disable the use
-    # of the decorator. If the type of 'enabled' is a boolean, then it
-    # is evaluated immediately and the wrapper not even applied if
-    # it is False. If not a boolean, it will be evaluated when the
-    # wrapper is called for an unbound wrapper, and when binding occurs
-    # for a bound wrapper. When being evaluated, if 'enabled' is callable
-    # it will be called to obtain the value to be checked. If False,
-    # the wrapper will not be called and instead the original wrapped
-    # function will be called directly instead.
+    # argument specification from inspect.getargspec() and similar
+    # functions to be overridden with a prototype for a different
+    # function than what was wrapped. The 'enabled' argument provides a
+    # way to enable/disable the use of the decorator. If the type of
+    # 'enabled' is a boolean, then it is evaluated immediately and the
+    # wrapper not even applied if it is False. If not a boolean, it will
+    # be evaluated when the wrapper is called for an unbound wrapper,
+    # and when binding occurs for a bound wrapper. When being evaluated,
+    # if 'enabled' is callable it will be called to obtain the value to
+    # be checked. If False, the wrapper will not be called and instead
+    # the original wrapped function will be called directly instead.
 
     if wrapper is not None:
         # Helper function for creating wrapper of the appropriate
@@ -162,6 +199,16 @@ def decorator(wrapper=None, enabled=None, adapter=None):
 
         def _build(wrapped, wrapper, enabled=None, adapter=None):
             if adapter:
+                if isinstance(adapter, AdapterFactory):
+                    adapter = adapter(wrapped)
+
+                if not callable(adapter):
+                    ns = {}
+                    if not isinstance(adapter, string_types):
+                        adapter = formatargspec(*adapter)
+                    exec_('def adapter{0}: pass'.format(adapter), ns, ns)
+                    adapter = ns['adapter']
+
                 return AdapterWrapper(wrapped=wrapped, wrapper=wrapper,
                         enabled=enabled, adapter=adapter)
 
@@ -208,7 +255,7 @@ def decorator(wrapper=None, enabled=None, adapter=None):
                     # we need to first check that use of the decorator
                     # hadn't been disabled by a simple boolean. If it was,
                     # the target function to be wrapped is returned instead.
-                    
+
                     _enabled = enabled
                     if type(_enabled) is bool:
                         if not _enabled:
@@ -377,7 +424,7 @@ def synchronized(wrapped):
 
     if hasattr(wrapped, 'acquire') and hasattr(wrapped, 'release'):
         # We remember what the original lock is and then return a new
-        # decorator which acceses and locks it. When returning the new
+        # decorator which accesses and locks it. When returning the new
         # decorator we wrap it with an object proxy so we can override
         # the context manager methods in case it is being used to wrap
         # synchronized statements with a 'with' statement.
@@ -406,7 +453,7 @@ def synchronized(wrapped):
     # Following only apply when the lock is being created automatically
     # based on the context of what was supplied. In this case we supply
     # a final decorator, but need to use FunctionWrapper directly as we
-    # want to derive from it to add context manager methods in in case it is
+    # want to derive from it to add context manager methods in case it is
     # being used to wrap synchronized statements with a 'with' statement.
 
     def _synchronized_lock(context):

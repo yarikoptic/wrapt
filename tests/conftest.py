@@ -1,13 +1,17 @@
+import sys
+
 import pytest
 
-from compat import PY2, PY3
+version = tuple(sys.version_info[:2])
 
 class DummyCollector(pytest.collect.File):
     def collect(self):
-         return []
+        return []
 
 def pytest_pycollect_makemodule(path, parent):
-    if "py3" in path.basename and not PY3:
+    if '_py33' in path.basename and version < (3, 3):
         return DummyCollector(path, parent=parent)
-    if "py2" in path.basename and not PY2:
+    if '_py3' in path.basename and version < (3, 0):
+        return DummyCollector(path, parent=parent)
+    if '_py2' in path.basename and version >= (3, 0):
         return DummyCollector(path, parent=parent)

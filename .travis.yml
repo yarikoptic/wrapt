@@ -1,0 +1,15 @@
+language: python
+python:
+  - "3.5"
+  - "3.6"
+env:
+  global:
+    - COVERAGE_CMD="coverage run -m"
+    - COVERAGE_DEP="coverage"
+install:
+  - pip install tox coveralls
+script:
+  - tox --skip-missing-interpreters
+after_script:
+  - coverage combine
+  - coveralls

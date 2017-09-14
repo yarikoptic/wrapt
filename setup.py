@@ -11,7 +11,7 @@ from distutils.errors import (CCompilerError, DistutilsExecError,
 
 if sys.platform == 'win32':
     build_ext_errors = (CCompilerError, DistutilsExecError,
-            DistutilsPlatformError, IOError)
+            DistutilsPlatformError, IOError, OSError)
 else:
     build_ext_errors = (CCompilerError, DistutilsExecError,
             DistutilsPlatformError)
@@ -32,16 +32,31 @@ class optional_build_ext(build_ext):
         except build_ext_errors:
             raise BuildExtFailed()
 
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'License :: OSI Approved :: BSD License',
+    'Programming Language :: Python :: 2.6',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3.3',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: Implementation :: CPython',
+    'Programming Language :: Python :: Implementation :: PyPy',
+]
+
 setup_kwargs = dict(
-      name = 'wrapt',
-      version = '1.9.0',
-      description = 'Module for decorators, wrappers and monkey patching.',
-      author = 'Graham Dumpleton',
-      author_email = 'Graham.Dumpleton@gmail.com',
-      license = 'BSD',
-      url = 'https://github.com/GrahamDumpleton/wrapt',
-      packages = ['wrapt'],
-      package_dir={'wrapt': 'src'},
+      name='wrapt',
+      version='1.10.11',
+      description='Module for decorators, wrappers and monkey patching.',
+      long_description=open('README.rst').read(),
+      author='Graham Dumpleton',
+      author_email='Graham.Dumpleton@gmail.com',
+      license='BSD',
+      classifiers=classifiers,
+      url='https://github.com/GrahamDumpleton/wrapt',
+      packages=['wrapt'],
+      package_dir={'': 'src'},
      )
 
 def run_setup(with_extensions):
@@ -49,12 +64,18 @@ def run_setup(with_extensions):
 
     if with_extensions:
         setup_kwargs_tmp['ext_modules'] = [
-                Extension("wrapt._wrappers", ["src/_wrappers.c"])]
+                Extension("wrapt._wrappers", ["src/wrapt/_wrappers.c"])]
         setup_kwargs_tmp['cmdclass'] = dict(build_ext=optional_build_ext)
 
     setup(**setup_kwargs_tmp)
 
-with_extensions = os.environ.get('WRAPT_EXTENSIONS', None)
+with_extensions = os.environ.get('WRAPT_INSTALL_EXTENSIONS')
+
+# Use WRAPT_INSTALL_EXTENSIONS now, but also check WRAPT_EXTENSIONS
+# for backward compatibility in case people had hard wired that.
+
+if with_extensions is None:
+    with_extensions = os.environ.get('WRAPT_EXTENSIONS')
 
 if with_extensions:
     if with_extensions.lower() == 'true':
