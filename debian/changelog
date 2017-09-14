@@ -15,6 +15,7 @@ python-wrapt (1.10.11-1) UNRELEASED; urgency=medium
   * debian/watch - use http://pypi.debian.net/ to monitor for new versions
     (Closes: #875799)
   * Fresh upstream release (Closes: #875797)
+    * debian/patches/do-not-run-test_proxy_attribute.patch updated
   * debian/control - fix up VCS url(s) (Closes: #875798)
 
  -- Yaroslav Halchenko <debian@onerussian.com>  Thu, 14 Sep 2017 10:53:40 -0400
