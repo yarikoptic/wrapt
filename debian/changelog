@@ -1,4 +1,4 @@
-python-wrapt (1.9.0-3) UNRELEASED; urgency=medium
+python-wrapt (1.10.11-1) UNRELEASED; urgency=medium
 
   [ Daniel Baumann ]
   * Updating vcs fields.
@@ -13,8 +13,10 @@ python-wrapt (1.9.0-3) UNRELEASED; urgency=medium
 
   [ Yaroslav Halchenko ]
   * debian/watch - use http://pypi.debian.net/ to monitor for new versions
+    (Closes: #875799)
+  * Fresh upstream release (Closes: #875797)
 
- -- Yaroslav Halchenko <debian@onerussian.com>  Thu, 14 Sep 2017 10:46:17 -0400
+ -- Yaroslav Halchenko <debian@onerussian.com>  Thu, 14 Sep 2017 10:53:40 -0400
 
 python-wrapt (1.9.0-2) unstable; urgency=medium
 
