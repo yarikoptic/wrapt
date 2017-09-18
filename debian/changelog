@@ -1,4 +1,4 @@
-python-wrapt (1.10.11-1) UNRELEASED; urgency=medium
+python-wrapt (1.10.11-1) unstable; urgency=medium
 
   [ Daniel Baumann ]
   * Updating vcs fields.
@@ -17,8 +17,10 @@ python-wrapt (1.10.11-1) UNRELEASED; urgency=medium
   * Fresh upstream release (Closes: #875797)
     * debian/patches/do-not-run-test_proxy_attribute.patch updated
   * debian/control - fix up VCS url(s) (Closes: #875798)
+  * debian/rules - point to the src/, not ., for python to locate wrapt module
+    during tests
 
- -- Yaroslav Halchenko <debian@onerussian.com>  Thu, 14 Sep 2017 10:53:40 -0400
+ -- Yaroslav Halchenko <debian@onerussian.com>  Mon, 18 Sep 2017 13:06:41 -0400
 
 python-wrapt (1.9.0-2) unstable; urgency=medium
 

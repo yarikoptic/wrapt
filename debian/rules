@@ -15,7 +15,7 @@ override_dh_auto_test:
 ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
 	ln -s src wrapt
 	set -ex && for pyvers in $(PYTHONS) $(PYTHON3S); do \
-		PYTHONPATH=. python$$pyvers -m pytest -v tests ; \
+		PYTHONPATH=src python$$pyvers -m pytest -v tests ; \
 	done
 	rm -f wrapt
 endif
